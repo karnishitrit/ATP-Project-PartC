@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import View.MazeDisplayer?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="View.MyViewController"
+            onKeyPressed="#keyPressed"
+            focusTraversable="true">
+
+    <top>
+        <MenuBar>
+            <Menu text="File">
+                <items>
+                    <MenuItem text="Generate Maze" onAction="#generateMaze"/>
+                    <MenuItem text="Save Maze" onAction="#saveMaze"/>
+                    <MenuItem text="Load Maze" onAction="#loadMaze"/>
+                    <SeparatorMenuItem/>
+                    <MenuItem text="Exit" onAction="#exit"/>
+                </items>
+            </Menu>
+
+            <Menu text="Maze">
+                <items>
+                    <MenuItem text="Solve Maze" onAction="#solveMaze"/>
+                </items>
+            </Menu>
+
+            <Menu text="Options">
+                <MenuItem text="Properties" onAction="#showProperties"/>
+            </Menu>
+            <Menu text="Help">
+                <MenuItem text="Help" onAction="#showHelp"/>
+                <MenuItem text="About" onAction="#showAbout"/>
+            </Menu>
+        </MenuBar>
+    </top>
+
+    <center>
+        <StackPane styleClass="maze-container">
+            <MazeDisplayer fx:id="mazeDisplayer" width="700" height="550"/>
+        </StackPane>
+    </center>
+
+
+</BorderPane>
