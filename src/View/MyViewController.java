@@ -3,6 +3,7 @@ package View;
 import ViewModel.MyViewModel;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
@@ -11,6 +12,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
+
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -19,12 +21,11 @@ import java.io.File;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Optional;
-
 public class MyViewController implements IView, Observer {
 
-    @FXML
-    private MazeDisplayer mazeDisplayer;
-
+    @FXML private MazeDisplayer mazeDisplayer;
+    @FXML private StackPane mazePane;
+    @FXML private StackPane welcomePane;
     private MyViewModel viewModel;
 
     private boolean gameFinished = false;
@@ -37,8 +38,17 @@ public class MyViewController implements IView, Observer {
 
     @FXML
     public void initialize() {
+        mazeDisplayer.widthProperty().bind(mazePane.widthProperty());
+        mazeDisplayer.heightProperty().bind(mazePane.heightProperty());
+
         mazeDisplayer.widthProperty().addListener((obs, oldVal, newVal) -> mazeDisplayer.redraw());
         mazeDisplayer.heightProperty().addListener((obs, oldVal, newVal) -> mazeDisplayer.redraw());
+
+        mazeDisplayer.setVisible(false);
+        mazeDisplayer.setManaged(false);
+
+        welcomePane.setVisible(true);
+        welcomePane.setManaged(true);
 
         mazeDisplayer.setOnMouseDragged(event -> {
             int targetRow = mazeDisplayer.getClickedRow(event.getY());
@@ -53,7 +63,6 @@ public class MyViewController implements IView, Observer {
             viewModel.moveCharacter(rowChange, columnChange);
         });
     }
-
 
     @FXML
     public void solveMaze() {
@@ -84,13 +93,21 @@ public class MyViewController implements IView, Observer {
 
             viewModel.generateMaze(rows, columns);
 
+            welcomePane.setVisible(false);
+            welcomePane.setManaged(false);
+
+            mazeDisplayer.setVisible(true);
+            mazeDisplayer.setManaged(true);
+            mazeDisplayer.toFront();
+            mazeDisplayer.redraw();
+
         } catch (Exception e) {
             displayError("Invalid maze size.");
         }
     }
 
     private int askForNumber(String title, String message) {
-        TextInputDialog dialog = new TextInputDialog("30");
+        TextInputDialog dialog = new TextInputDialog("15");
         dialog.setTitle(title);
         dialog.setHeaderText(message);
         dialog.setContentText("Value:");
@@ -145,15 +162,50 @@ public class MyViewController implements IView, Observer {
         System.out.println("Pressed: " + keyEvent.getCode());
 
         switch (keyEvent.getCode()) {
-            case NUMPAD8, DIGIT8 -> viewModel.moveCharacter(-1, 0);
-            case NUMPAD2, DIGIT2 -> viewModel.moveCharacter(1, 0);
-            case NUMPAD4, DIGIT4 -> viewModel.moveCharacter(0, -1);
-            case NUMPAD6, DIGIT6 -> viewModel.moveCharacter(0, 1);
 
-            case NUMPAD7, DIGIT7 -> viewModel.moveCharacter(-1, -1);
-            case NUMPAD9, DIGIT9 -> viewModel.moveCharacter(-1, 1);
-            case NUMPAD1, DIGIT1 -> viewModel.moveCharacter(1, -1);
-            case NUMPAD3, DIGIT3 -> viewModel.moveCharacter(1, 1);
+            // למעלה
+            case NUMPAD8, DIGIT8 ->
+                    viewModel.moveCharacter(-1, 0);
+
+            // למטה
+            case NUMPAD2, DIGIT2 ->
+                    viewModel.moveCharacter(1, 0);
+
+            // ימינה
+            case NUMPAD6, DIGIT6 -> {
+                mazeDisplayer.setFacingRight(true);
+                viewModel.moveCharacter(0, 1);
+            }
+
+            // שמאלה
+            case NUMPAD4, DIGIT4 -> {
+                mazeDisplayer.setFacingRight(false);
+                viewModel.moveCharacter(0, -1);
+            }
+
+            // אלכסון ימין-למעלה
+            case NUMPAD9, DIGIT9 -> {
+                mazeDisplayer.setFacingRight(true);
+                viewModel.moveCharacter(-1, 1);
+            }
+
+            // אלכסון ימין-למטה
+            case NUMPAD3, DIGIT3 -> {
+                mazeDisplayer.setFacingRight(true);
+                viewModel.moveCharacter(1, 1);
+            }
+
+            // אלכסון שמאל-למעלה
+            case NUMPAD7, DIGIT7 -> {
+                mazeDisplayer.setFacingRight(false);
+                viewModel.moveCharacter(-1, -1);
+            }
+
+            // אלכסון שמאל-למטה
+            case NUMPAD1, DIGIT1 -> {
+                mazeDisplayer.setFacingRight(false);
+                viewModel.moveCharacter(1, -1);
+            }
         }
 
         keyEvent.consume();
@@ -279,12 +331,6 @@ public class MyViewController implements IView, Observer {
             mazeDisplayer.setScaleY(zoom);
 
             event.consume();
-        }
-    }
-
-    public void redrawMaze() {
-        if (mazeDisplayer != null) {
-            mazeDisplayer.redraw();
         }
     }
 }

@@ -13,7 +13,11 @@ public class MazeDisplayer extends Canvas {
     private int characterRow;
     private int characterColumn;
 
-    private final Image robotImage = loadImage("/Images/robot.png");
+    private final Image robotRightImage = loadImage("/Images/robot_right.png");
+    private final Image robotLeftImage = loadImage("/Images/robot_left.png");
+
+    private boolean facingRight = true;
+
     private final Image floorImage = loadImage("/Images/floor.png");
     private final Image goalImage = loadImage("/Images/charging_station.png");
 
@@ -45,6 +49,11 @@ public class MazeDisplayer extends Canvas {
     public void setCharacterPosition(int row, int column) {
         this.characterRow = row;
         this.characterColumn = column;
+        redraw();
+    }
+
+    public void setFacingRight(boolean facingRight) {
+        this.facingRight = facingRight;
         redraw();
     }
 
@@ -142,7 +151,7 @@ public class MazeDisplayer extends Canvas {
 
     private void drawCharacter(GraphicsContext gc, double cellWidth, double cellHeight) {
         gc.drawImage(
-                robotImage,
+                facingRight ? robotRightImage : robotLeftImage,
                 characterColumn * cellWidth,
                 characterRow * cellHeight,
                 cellWidth,
@@ -177,5 +186,25 @@ public class MazeDisplayer extends Canvas {
     @Override
     public boolean isResizable() {
         return true;
+    }
+
+    @Override
+    public double minWidth(double height) {
+        return 0;
+    }
+
+    @Override
+    public double minHeight(double width) {
+        return 0;
+    }
+
+    @Override
+    public double maxWidth(double height) {
+        return Double.MAX_VALUE;
+    }
+
+    @Override
+    public double maxHeight(double width) {
+        return Double.MAX_VALUE;
     }
 }

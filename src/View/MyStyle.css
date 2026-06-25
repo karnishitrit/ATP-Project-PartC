@@ -12,3 +12,15 @@
     -fx-padding: 10;
     -fx-alignment: center;
 }
+
+.welcomePane {
+    -fx-background-image: url("/Images/start.png");
+    -fx-background-size: contain;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-background-color: #063b35;
+}
+
+.welcomeTextBox {
+    -fx-padding: 0 0 35 0;
+}

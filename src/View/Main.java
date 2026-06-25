@@ -15,6 +15,8 @@ public class Main extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/View/MyView.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 900, 700);
 
+        scene.getStylesheets().add(getClass().getResource("MyStyle.css").toExternalForm());
+
         IModel model = new MyModel();
         MyViewModel viewModel = new MyViewModel(model);
 
@@ -23,6 +25,8 @@ public class Main extends Application {
 
         primaryStage.setTitle("Maze Game");
         primaryStage.setScene(scene);
+        primaryStage.setMinWidth(400);
+        primaryStage.setMinHeight(400);
         primaryStage.show();
 
         scene.setOnKeyPressed(controller::keyPressed);
