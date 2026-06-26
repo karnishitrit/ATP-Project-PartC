@@ -53,9 +53,9 @@ public class MyModel  extends Observable implements IModel {
     }
 
     @Override
-    public void moveCharacter(int rowChange, int columnChange) {
+    public boolean moveCharacter(int rowChange, int columnChange) {
         if (maze == null)
-            return;
+            return false;
 
         int newRow = characterRow + rowChange;
         int newColumn = characterColumn + columnChange;
@@ -66,7 +66,10 @@ public class MyModel  extends Observable implements IModel {
 
             setChanged();
             notifyObservers();
+
+            return true;
         }
+        return false;
     }
 
     private boolean canMoveTo(int row, int column, int rowChange, int columnChange) {

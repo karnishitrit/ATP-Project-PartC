@@ -12,12 +12,16 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
+import javafx.animation.PauseTransition;
+import javafx.util.Duration;
 
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+
 import java.io.File;
 
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Optional;
@@ -28,8 +32,21 @@ public class MyViewController implements IView, Observer {
     @FXML private StackPane welcomePane;
     private MyViewModel viewModel;
 
+
     private boolean gameFinished = false;
     private double zoom = 1.0;
+
+    private static final List<String> WALL_SOUNDS = List.of(
+            "Brother, I'm not allowed to drink glass, brother.m4a",
+            "I'm on a dust diet.m4a"
+    );
+
+    private static final List<String> FINISH_SOUNDS = List.of(
+            "The kitchen is sparkling and sparkling for you, sir.m4a",
+            "The kitchen is dust free.m4a"
+    );
+
+
 
     public void setViewModel(MyViewModel viewModel) {
         this.viewModel = viewModel;
@@ -60,8 +77,12 @@ public class MyViewController implements IView, Observer {
             int rowChange = Integer.compare(targetRow, currentRow);
             int columnChange = Integer.compare(targetColumn, currentColumn);
 
-            viewModel.moveCharacter(rowChange, columnChange);
+            boolean moved = viewModel.moveCharacter(rowChange, columnChange);
+            if (!moved) {
+                SoundManager.playRandomEffect(WALL_SOUNDS);
+            }
         });
+        SoundManager.playEffect("start.m4a");
     }
 
     @FXML
@@ -79,6 +100,13 @@ public class MyViewController implements IView, Observer {
         Optional<ButtonType> result = alert.showAndWait();
 
         if (result.isPresent() && result.get() == ButtonType.OK) {
+
+            SoundManager.stopBackground();
+
+            displayLoseMessage();
+
+            SoundManager.playBackground("background.m4a");
+
             viewModel.solveMaze();
         }
     }
@@ -90,6 +118,15 @@ public class MyViewController implements IView, Observer {
 
             int rows = askForNumber("Rows", "Enter number of rows:");
             int columns = askForNumber("Columns", "Enter number of columns:");
+
+            SoundManager.playEffect("lets eat some dust.m4a");
+
+            PauseTransition pause = new PauseTransition(Duration.seconds(2.5));
+
+            pause.setOnFinished(e ->
+                    SoundManager.playBackground("background.m4a"));
+
+            pause.play();
 
             viewModel.generateMaze(rows, columns);
 
@@ -163,48 +200,40 @@ public class MyViewController implements IView, Observer {
 
         switch (keyEvent.getCode()) {
 
-            // למעלה
             case NUMPAD8, DIGIT8 ->
-                    viewModel.moveCharacter(-1, 0);
+                    moveCharacterWithSound(-1, 0);
 
-            // למטה
             case NUMPAD2, DIGIT2 ->
-                    viewModel.moveCharacter(1, 0);
+                    moveCharacterWithSound(1, 0);
 
-            // ימינה
             case NUMPAD6, DIGIT6 -> {
                 mazeDisplayer.setFacingRight(true);
-                viewModel.moveCharacter(0, 1);
+                moveCharacterWithSound(0, 1);
             }
 
-            // שמאלה
             case NUMPAD4, DIGIT4 -> {
                 mazeDisplayer.setFacingRight(false);
-                viewModel.moveCharacter(0, -1);
+                moveCharacterWithSound(0, -1);
             }
 
-            // אלכסון ימין-למעלה
             case NUMPAD9, DIGIT9 -> {
                 mazeDisplayer.setFacingRight(true);
-                viewModel.moveCharacter(-1, 1);
+                moveCharacterWithSound(-1, 1);
             }
 
-            // אלכסון ימין-למטה
             case NUMPAD3, DIGIT3 -> {
                 mazeDisplayer.setFacingRight(true);
-                viewModel.moveCharacter(1, 1);
+                moveCharacterWithSound(1, 1);
             }
 
-            // אלכסון שמאל-למעלה
             case NUMPAD7, DIGIT7 -> {
                 mazeDisplayer.setFacingRight(false);
-                viewModel.moveCharacter(-1, -1);
+                moveCharacterWithSound(-1, -1);
             }
 
-            // אלכסון שמאל-למטה
             case NUMPAD1, DIGIT1 -> {
                 mazeDisplayer.setFacingRight(false);
-                viewModel.moveCharacter(1, -1);
+                moveCharacterWithSound(1, -1);
             }
         }
 
@@ -236,6 +265,8 @@ public class MyViewController implements IView, Observer {
 
     @Override
     public void displayWinMessage() {
+        SoundManager.playEffect("totah.m4a");
+
         Stage stage = new Stage();
 
         Image image = new Image(getClass().getResourceAsStream("/Images/success.png"));
@@ -251,6 +282,28 @@ public class MyViewController implements IView, Observer {
         stage.setScene(scene);
         stage.setTitle("Congratulations!");
         stage.show();
+    }
+
+    public void displayLoseMessage() {
+
+        SoundManager.playEffect("what a loser.m4a");
+
+        Stage stage = new Stage();
+
+        Image image = new Image(getClass().getResourceAsStream("/Images/loser.png"));
+        ImageView imageView = new ImageView(image);
+
+        imageView.setPreserveRatio(true);
+        imageView.setFitWidth(700);
+
+        StackPane root = new StackPane(imageView);
+
+        Scene scene = new Scene(root);
+
+        stage.setScene(scene);
+        stage.setTitle("You Lost!");
+
+        stage.showAndWait();
     }
 
     @FXML
@@ -299,7 +352,10 @@ public class MyViewController implements IView, Observer {
 
         if (!gameFinished && viewModel.isGoalReached()) {
             gameFinished = true;
-            displayWinMessage();
+
+            SoundManager.stopBackground();
+
+            SoundManager.playRandomEffectAndThen(FINISH_SOUNDS, this::displayWinMessage);
         }
     }
 
@@ -331,6 +387,12 @@ public class MyViewController implements IView, Observer {
             mazeDisplayer.setScaleY(zoom);
 
             event.consume();
+        }
+    }
+
+    private void moveCharacterWithSound(int rowChange, int colChange) {
+        if (!viewModel.moveCharacter(rowChange, colChange)) {
+            SoundManager.playRandomEffectWithCooldown(WALL_SOUNDS,900);;
         }
     }
 }

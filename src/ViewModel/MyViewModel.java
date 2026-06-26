@@ -38,9 +38,10 @@ public class MyViewModel extends Observable implements Observer {
         return model.getSolution();
     }
 
-    public void moveCharacter(int rowChange, int columnChange) {
-        model.moveCharacter(rowChange, columnChange);
+    public boolean moveCharacter(int rowChange, int columnChange) {
+        boolean moved = model.moveCharacter(rowChange, columnChange);
         updateCharacterPosition();
+        return moved;
     }
 
     public boolean isGoalReached() {

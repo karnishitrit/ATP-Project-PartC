@@ -12,7 +12,7 @@ public interface IModel {
     void solveMaze();
     Solution getSolution();
 
-    void moveCharacter(int rowChange, int columnChange);
+    boolean moveCharacter(int rowChange, int columnChange);
     int getCharacterRow();
     int getCharacterColumn();
 
