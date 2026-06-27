@@ -1,5 +1,8 @@
 package View;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import ViewModel.MyViewModel;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -31,6 +34,7 @@ public class MyViewController implements IView, Observer {
     @FXML private StackPane mazePane;
     @FXML private StackPane welcomePane;
     private MyViewModel viewModel;
+    private static final Logger logger = LogManager.getLogger(MyViewController.class);
 
 
     private boolean gameFinished = false;
@@ -107,6 +111,8 @@ public class MyViewController implements IView, Observer {
 
             SoundManager.playBackground("background.m4a");
 
+            logger.info("User requested maze solution");
+
             viewModel.solveMaze();
         }
     }
@@ -130,6 +136,8 @@ public class MyViewController implements IView, Observer {
 
             viewModel.generateMaze(rows, columns);
 
+            logger.info("Generated maze: {} rows x {} columns", rows, columns);
+
             welcomePane.setVisible(false);
             welcomePane.setManaged(false);
 
@@ -139,6 +147,7 @@ public class MyViewController implements IView, Observer {
             mazeDisplayer.redraw();
 
         } catch (Exception e) {
+            logger.warn("User entered invalid maze size", e);
             displayError("Invalid maze size.");
         }
     }
@@ -177,6 +186,7 @@ public class MyViewController implements IView, Observer {
 
         if (file != null) {
             viewModel.saveMaze(file);
+            logger.info("Maze saved to {}", file.getAbsolutePath());
         }
     }
 
@@ -192,6 +202,7 @@ public class MyViewController implements IView, Observer {
 
         if (file != null) {
             viewModel.loadMaze(file);
+            logger.info("Maze loaded from {}", file.getAbsolutePath());
         }
     }
 
@@ -353,8 +364,9 @@ public class MyViewController implements IView, Observer {
         if (!gameFinished && viewModel.isGoalReached()) {
             gameFinished = true;
 
-            SoundManager.stopBackground();
+            logger.info("Player reached the goal");
 
+            SoundManager.stopBackground();
             SoundManager.playRandomEffectAndThen(FINISH_SOUNDS, this::displayWinMessage);
         }
     }

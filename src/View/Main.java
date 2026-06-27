@@ -8,10 +8,17 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class Main extends Application {
+
+    private static final Logger logger = LogManager.getLogger(Main.class);
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        logger.info("Application started");
+
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/View/MyView.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 900, 700);
 
@@ -28,6 +35,8 @@ public class Main extends Application {
         primaryStage.setMinWidth(400);
         primaryStage.setMinHeight(400);
         primaryStage.show();
+
+        logger.info("Main window displayed");
 
         scene.setOnKeyPressed(controller::keyPressed);
         scene.setOnScroll(controller::mouseScrolled);

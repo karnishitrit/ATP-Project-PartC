@@ -1,5 +1,8 @@
 package Model;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import algorithms.mazeGenerators.Maze;
 import algorithms.mazeGenerators.MyMazeGenerator;
 import algorithms.search.BestFirstSearch;
@@ -15,10 +18,14 @@ public class MyModel  extends Observable implements IModel {
     private Solution solution;
     private int characterRow;
     private int characterColumn;
+    private static final Logger logger = LogManager.getLogger(MyModel.class);
 
     @Override
     public void generateMaze(int rows, int columns) {
         maze = new MyMazeGenerator().generate(rows, columns);
+
+        logger.info("Maze generated successfully");
+
         solution = null;
         characterRow = maze.getStartPosition().getRowIndex();
         characterColumn = maze.getStartPosition().getColumnIndex();
@@ -36,12 +43,16 @@ public class MyModel  extends Observable implements IModel {
         if (maze == null)
             return;
 
+        logger.info("Started solving maze");
+
         characterRow = maze.getStartPosition().getRowIndex();
         characterColumn = maze.getStartPosition().getColumnIndex();
 
         SearchableMaze searchableMaze = new SearchableMaze(maze);
         ISearchingAlgorithm searcher = new BestFirstSearch();
         solution = searcher.solve(searchableMaze);
+
+        logger.info("Maze solved successfully");
 
         setChanged();
         notifyObservers();
@@ -122,8 +133,13 @@ public class MyModel  extends Observable implements IModel {
 
         try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
             fileOutputStream.write(maze.toByteArray());
+
+            logger.info("Maze saved successfully");
+
         } catch (IOException e) {
             e.printStackTrace();
+
+            logger.error("Failed to save maze", e);
         }
     }
 
@@ -141,10 +157,15 @@ public class MyModel  extends Observable implements IModel {
             characterColumn = maze.getStartPosition().getColumnIndex();
             solution = null;
 
+            logger.info("Maze loaded successfully");
+
             setChanged();
             notifyObservers();
+
         } catch (IOException e) {
             e.printStackTrace();
+
+            logger.error("Failed to load maze", e);
         }
     }
 
