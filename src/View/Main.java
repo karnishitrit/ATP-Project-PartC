@@ -25,6 +25,8 @@ public class Main extends Application {
         scene.getStylesheets().add(getClass().getResource("MyStyle.css").toExternalForm());
 
         IModel model = new MyModel();
+        model.startServers();
+
         MyViewModel viewModel = new MyViewModel(model);
 
         MyViewController controller = fxmlLoader.getController();
@@ -44,6 +46,7 @@ public class Main extends Application {
 
 
         primaryStage.setOnCloseRequest(event -> {
+            model.stopServers();
             primaryStage.close();
         });
     }
