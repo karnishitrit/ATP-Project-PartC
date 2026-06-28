@@ -1,2 +1,29 @@
-2026-06-27 10:17:58 INFO  Main - Application started
-2026-06-27 10:17:59 INFO  Main - Main window displayed
+2026-06-28 11:00:19 INFO  Main - Application started
+2026-06-28 11:00:19 INFO  MyModel - Maze servers started
+2026-06-28 11:00:20 INFO  Main - Main window displayed
+2026-06-28 11:00:26 INFO  MyModel - Maze generation request | Client IP: 192.168.1.159 | Server: 5400 | Maze size: 15x15
+2026-06-28 11:00:26 INFO  MyModel - Maze received successfully from server
+2026-06-28 11:00:26 INFO  MyViewController - Generated maze: 15 rows x 15 columns
+2026-06-28 11:00:44 INFO  MyViewController - Player reached the goal
+2026-06-28 11:00:54 INFO  MyModel - Maze generation request | Client IP: 192.168.1.159 | Server: 5400 | Maze size: 15x15
+2026-06-28 11:00:54 INFO  MyModel - Maze received successfully from server
+2026-06-28 11:00:54 INFO  MyViewController - Generated maze: 15 rows x 15 columns
+2026-06-28 11:01:03 INFO  MyViewController - User requested maze solution
+2026-06-28 11:01:03 INFO  MyModel - Started solving maze
+2026-06-28 11:01:03 INFO  MyModel - Maze solving request | Client IP: 192.168.1.159 | Server: 5401 | Maze size: 15x15
+2026-06-28 11:01:03 INFO  MyModel - Solution received successfully from server
+2026-06-28 11:01:29 INFO  MyModel - Saving maze | File=C:\Users\DELL\Desktop\הנדסת ערכות מידע\שנה ב\סמסטר ד\תכנות\firstTry.maze | Maze size=15x15
+2026-06-28 11:01:29 INFO  MyModel - Maze saved successfully
+2026-06-28 11:01:29 INFO  MyViewController - Maze saved to C:\Users\DELL\Desktop\הנדסת ערכות מידע\שנה ב\סמסטר ד\תכנות\firstTry.maze
+2026-06-28 11:01:33 INFO  MyModel - Maze generation request | Client IP: 192.168.1.159 | Server: 5400 | Maze size: 15x15
+2026-06-28 11:01:33 INFO  MyModel - Maze received successfully from server
+2026-06-28 11:01:33 INFO  MyViewController - Generated maze: 15 rows x 15 columns
+2026-06-28 11:01:44 INFO  MyModel - Loading maze | File=C:\Users\DELL\Desktop\הנדסת ערכות מידע\שנה ב\סמסטר ד\תכנות\firstTry.maze
+2026-06-28 11:01:44 INFO  MyModel - Maze loaded successfully | Maze size=15x15
+2026-06-28 11:01:44 INFO  MyViewController - Maze loaded from C:\Users\DELL\Desktop\הנדסת ערכות מידע\שנה ב\סמסטר ד\תכנות\firstTry.maze
+2026-06-28 11:01:55 INFO  MyViewController - User requested maze solution
+2026-06-28 11:01:55 INFO  MyModel - Started solving maze
+2026-06-28 11:01:55 INFO  MyModel - Maze solving request | Client IP: 192.168.1.159 | Server: 5401 | Maze size: 15x15
+2026-06-28 11:01:55 INFO  MyModel - Solution received successfully from server
+2026-06-28 11:01:57 INFO  MyModel - Maze servers stopped
+2026-06-28 11:01:57 INFO  Main - Application closed

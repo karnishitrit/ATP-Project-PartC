@@ -14,6 +14,7 @@ public class SoundManager {
     private static final Random random = new Random();
     private static int lastRandomIndex = -1;
     private static long lastCooldownTime = 0;
+    private static long lastRandomEffectTime = 0;
 
     public static void playEffect(String fileName) {
 
@@ -24,6 +25,7 @@ public class SoundManager {
 
         clip.play();
     }
+
 
     public static void playBackground(String fileName) {
 
@@ -55,6 +57,14 @@ public class SoundManager {
     }
 
     public static void playRandomEffect(List<String> soundFiles) {
+
+        long now = System.currentTimeMillis();
+
+        if (now - lastRandomEffectTime < 300) {
+            return;
+        }
+
+        lastRandomEffectTime = now;
 
         if (soundFiles == null || soundFiles.isEmpty()) {
             return;

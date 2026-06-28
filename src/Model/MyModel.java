@@ -4,10 +4,17 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import algorithms.mazeGenerators.Maze;
-import algorithms.mazeGenerators.MyMazeGenerator;
-import algorithms.search.BestFirstSearch;
-import algorithms.search.ISearchingAlgorithm;
-import algorithms.search.SearchableMaze;
+import Client.Client;
+import Client.IClientStrategy;
+import IO.MyDecompressorInputStream;
+import Server.Server;
+import Server.ServerStrategyGenerateMaze;
+import Server.ServerStrategySolveSearchProblem;
+
+import java.io.ByteArrayInputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
 import algorithms.search.Solution;
 
 import java.io.*;
@@ -16,21 +23,76 @@ import java.util.Observable;
 public class MyModel  extends Observable implements IModel {
     private Maze maze;
     private Solution solution;
+    private Server mazeGeneratingServer;
+    private Server solveSearchProblemServer;
     private int characterRow;
     private int characterColumn;
     private static final Logger logger = LogManager.getLogger(MyModel.class);
 
     @Override
     public void generateMaze(int rows, int columns) {
-        maze = new MyMazeGenerator().generate(rows, columns);
 
-        logger.info("Maze generated successfully");
+        try {
 
-        solution = null;
-        characterRow = maze.getStartPosition().getRowIndex();
-        characterColumn = maze.getStartPosition().getColumnIndex();
-        setChanged();
-        notifyObservers();
+            Client client = new Client(InetAddress.getLocalHost(), 5400, new IClientStrategy() {
+
+                @Override
+                public void clientStrategy(InputStream inFromServer, OutputStream outToServer) {
+
+                    try {
+
+                        ObjectOutputStream toServer = new ObjectOutputStream(outToServer);
+                        ObjectInputStream fromServer = new ObjectInputStream(inFromServer);
+
+                        toServer.flush();
+
+                        int[] mazeDimensions = new int[]{rows, columns};
+
+                        toServer.writeObject(mazeDimensions);
+                        toServer.flush();
+
+                        byte[] compressedMaze = (byte[]) fromServer.readObject();
+
+                        InputStream is = new MyDecompressorInputStream(
+                                new ByteArrayInputStream(compressedMaze));
+
+                        byte[] decompressedMaze = new byte[rows * columns + 24];
+
+                        is.read(decompressedMaze);
+
+                        maze = new Maze(decompressedMaze);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+            logger.info(
+                    "Maze generation request | Client IP: {} | Server: {} | Maze size: {}x{}",
+                    InetAddress.getLocalHost().getHostAddress(),
+                    5400,
+                    rows,
+                    columns
+            );
+
+            client.communicateWithServer();
+
+            logger.info("Maze received successfully from server");
+
+
+            solution = null;
+
+            characterRow = maze.getStartPosition().getRowIndex();
+            characterColumn = maze.getStartPosition().getColumnIndex();
+
+            setChanged();
+            notifyObservers();
+
+        } catch (Exception e) {
+
+            logger.error("Failed to generate maze", e);
+        }
     }
 
     @Override
@@ -40,22 +102,59 @@ public class MyModel  extends Observable implements IModel {
 
     @Override
     public void solveMaze() {
+
         if (maze == null)
             return;
 
-        logger.info("Started solving maze");
+        try {
 
-        characterRow = maze.getStartPosition().getRowIndex();
-        characterColumn = maze.getStartPosition().getColumnIndex();
+            Client client = new Client(InetAddress.getLocalHost(), 5401, new IClientStrategy() {
 
-        SearchableMaze searchableMaze = new SearchableMaze(maze);
-        ISearchingAlgorithm searcher = new BestFirstSearch();
-        solution = searcher.solve(searchableMaze);
+                @Override
+                public void clientStrategy(InputStream inFromServer, OutputStream outToServer) {
 
-        logger.info("Maze solved successfully");
+                    try {
 
-        setChanged();
-        notifyObservers();
+                        ObjectOutputStream toServer = new ObjectOutputStream(outToServer);
+                        ObjectInputStream fromServer = new ObjectInputStream(inFromServer);
+
+                        toServer.flush();
+
+                        toServer.writeObject(maze);
+                        toServer.flush();
+
+                        solution = (Solution) fromServer.readObject();
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+            logger.info("Started solving maze");
+
+            logger.info(
+                    "Maze solving request | Client IP: {} | Server: {} | Maze size: {}x{}",
+                    InetAddress.getLocalHost().getHostAddress(),
+                    5401,
+                    maze.getMaze().length,
+                    maze.getMaze()[0].length
+            );
+
+            client.communicateWithServer();
+
+            characterRow = maze.getStartPosition().getRowIndex();
+            characterColumn = maze.getStartPosition().getColumnIndex();
+
+            logger.info("Solution received successfully from server");
+
+            setChanged();
+            notifyObservers();
+
+        } catch (Exception e) {
+
+            logger.error("Failed to solve maze", e);
+        }
     }
 
     @Override
@@ -131,7 +230,16 @@ public class MyModel  extends Observable implements IModel {
         if (maze == null || file == null)
             return;
 
+        logger.info(
+                "Saving maze | File={} | Maze size={}x{}",
+                file.getAbsolutePath(),
+                maze.getMaze().length,
+                maze.getMaze()[0].length
+        );
+
         try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
+
+
             fileOutputStream.write(maze.toByteArray());
 
             logger.info("Maze saved successfully");
@@ -149,7 +257,12 @@ public class MyModel  extends Observable implements IModel {
         if (file == null)
             return;
 
+        logger.info(
+                "Loading maze | File={}",
+                file.getAbsolutePath()
+        );
         try (FileInputStream fileInputStream = new FileInputStream(file)) {
+
             byte[] mazeBytes = fileInputStream.readAllBytes();
             maze = new Maze(mazeBytes);
 
@@ -157,7 +270,11 @@ public class MyModel  extends Observable implements IModel {
             characterColumn = maze.getStartPosition().getColumnIndex();
             solution = null;
 
-            logger.info("Maze loaded successfully");
+            logger.info(
+                    "Maze loaded successfully | Maze size={}x{}",
+                    maze.getMaze().length,
+                    maze.getMaze()[0].length
+            );
 
             setChanged();
             notifyObservers();
@@ -171,11 +288,34 @@ public class MyModel  extends Observable implements IModel {
 
     @Override
     public void startServers() {
-        // Later we will start the maze generation and solving servers here.
+
+        mazeGeneratingServer = new Server(
+                5400,
+                1000,
+                new ServerStrategyGenerateMaze());
+
+        solveSearchProblemServer = new Server(
+                5401,
+                1000,
+                new ServerStrategySolveSearchProblem());
+
+        mazeGeneratingServer.start();
+        solveSearchProblemServer.start();
+
+        logger.info("Maze servers started");
     }
 
     @Override
     public void stopServers() {
-        // Later we will stop all servers here in a clean way.
+
+        if (mazeGeneratingServer != null) {
+            mazeGeneratingServer.stop();
+        }
+
+        if (solveSearchProblemServer != null) {
+            solveSearchProblemServer.stop();
+        }
+
+        logger.info("Maze servers stopped");
     }
 }
