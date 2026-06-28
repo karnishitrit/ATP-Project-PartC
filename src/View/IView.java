@@ -5,6 +5,7 @@ public interface IView {
     void displaySolution();
     void displayError(String message);
     void displayWinMessage();
+
     void saveMaze();
     void loadMaze();
 }

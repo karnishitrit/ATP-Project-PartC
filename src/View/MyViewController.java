@@ -6,7 +6,6 @@ import org.apache.logging.log4j.Logger;
 import ViewModel.MyViewModel;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
@@ -17,25 +16,28 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import javafx.animation.PauseTransition;
 import javafx.util.Duration;
-
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-
 import java.io.File;
-
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Optional;
+
+/**
+ * Controller for the main application view.
+ * Handles user actions, updates the maze display,
+ * and communicates with the ViewModel.
+ */
 public class MyViewController implements IView, Observer {
 
     @FXML private MazeDisplayer mazeDisplayer;
     @FXML private StackPane mazePane;
     @FXML private StackPane welcomePane;
+
     private MyViewModel viewModel;
     private static final Logger logger = LogManager.getLogger(MyViewController.class);
-
 
     private boolean gameFinished = false;
     private double zoom = 1.0;
@@ -50,13 +52,22 @@ public class MyViewController implements IView, Observer {
             "The kitchen is dust free.m4a"
     );
 
-
-
+    /**
+     * Sets the ViewModel used by this controller
+     * and registers the controller as an observer.
+     *
+     * @param viewModel the ViewModel connected to this view
+     */
     public void setViewModel(MyViewModel viewModel) {
         this.viewModel = viewModel;
         this.viewModel.addObserver(this);
     }
 
+    /**
+     * Initializes the view after the FXML file is loaded.
+     * Binds the maze display size to its pane, sets the welcome screen,
+     * and registers mouse dragging behavior.
+     */
     @FXML
     public void initialize() {
         mazeDisplayer.widthProperty().bind(mazePane.widthProperty());
@@ -86,9 +97,14 @@ public class MyViewController implements IView, Observer {
                 SoundManager.playRandomEffect(WALL_SOUNDS);
             }
         });
+
         SoundManager.playEffect("start.m4a");
     }
 
+    /**
+     * Asks the user for confirmation and then requests
+     * the maze solution from the ViewModel.
+     */
     @FXML
     public void solveMaze() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -97,18 +113,15 @@ public class MyViewController implements IView, Observer {
         alert.setContentText("""
                 The robot must return to the charging station
                 before calculating the optimal route.
-                
+
                 Return to the starting position?
             """);
 
         Optional<ButtonType> result = alert.showAndWait();
 
         if (result.isPresent() && result.get() == ButtonType.OK) {
-
             SoundManager.stopBackground();
-
             displayLoseMessage();
-
             SoundManager.playBackground("background.m4a");
 
             logger.info("User requested maze solution");
@@ -117,6 +130,10 @@ public class MyViewController implements IView, Observer {
         }
     }
 
+    /**
+     * Creates a new maze according to dimensions entered by the user.
+     * Also switches the screen from the welcome pane to the maze display.
+     */
     @FXML
     public void generateMaze() {
         try {
@@ -128,10 +145,7 @@ public class MyViewController implements IView, Observer {
             SoundManager.playEffect("lets eat some dust.m4a");
 
             PauseTransition pause = new PauseTransition(Duration.seconds(2.5));
-
-            pause.setOnFinished(e ->
-                    SoundManager.playBackground("background.m4a"));
-
+            pause.setOnFinished(e -> SoundManager.playBackground("background.m4a"));
             pause.play();
 
             viewModel.generateMaze(rows, columns);
@@ -152,6 +166,13 @@ public class MyViewController implements IView, Observer {
         }
     }
 
+    /**
+     * Opens a dialog and reads a valid maze size value.
+     *
+     * @param title dialog title
+     * @param message message displayed to the user
+     * @return the number entered by the user
+     */
     private int askForNumber(String title, String message) {
         TextInputDialog dialog = new TextInputDialog("15");
         dialog.setTitle(title);
@@ -173,7 +194,9 @@ public class MyViewController implements IView, Observer {
         return value;
     }
 
-
+    /**
+     * Opens a file chooser and saves the current maze.
+     */
     @FXML
     public void saveMaze() {
         FileChooser fileChooser = new FileChooser();
@@ -190,6 +213,9 @@ public class MyViewController implements IView, Observer {
         }
     }
 
+    /**
+     * Opens a file chooser and loads a maze from a file.
+     */
     @FXML
     public void loadMaze() {
         FileChooser fileChooser = new FileChooser();
@@ -206,16 +232,15 @@ public class MyViewController implements IView, Observer {
         }
     }
 
+    /**
+     * Handles keyboard movement using NumPad and digit keys.
+     *
+     * @param keyEvent the keyboard event
+     */
     public void keyPressed(KeyEvent keyEvent) {
-        System.out.println("Pressed: " + keyEvent.getCode());
-
         switch (keyEvent.getCode()) {
-
-            case NUMPAD8, DIGIT8 ->
-                    moveCharacterWithSound(-1, 0);
-
-            case NUMPAD2, DIGIT2 ->
-                    moveCharacterWithSound(1, 0);
+            case NUMPAD8, DIGIT8 -> moveCharacterWithSound(-1, 0);
+            case NUMPAD2, DIGIT2 -> moveCharacterWithSound(1, 0);
 
             case NUMPAD6, DIGIT6 -> {
                 mazeDisplayer.setFacingRight(true);
@@ -251,6 +276,9 @@ public class MyViewController implements IView, Observer {
         keyEvent.consume();
     }
 
+    /**
+     * Updates the maze and character position on the screen.
+     */
     @Override
     public void displayMaze() {
         mazeDisplayer.setMaze(viewModel.getMaze());
@@ -260,11 +288,19 @@ public class MyViewController implements IView, Observer {
         );
     }
 
+    /**
+     * Shows the solution path on the maze display.
+     */
     @Override
     public void displaySolution() {
         mazeDisplayer.setSolution(viewModel.getSolution());
     }
 
+    /**
+     * Displays an error dialog.
+     *
+     * @param message error message to display
+     */
     @Override
     public void displayError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -274,6 +310,9 @@ public class MyViewController implements IView, Observer {
         alert.showAndWait();
     }
 
+    /**
+     * Shows the winning screen and plays the success sound.
+     */
     @Override
     public void displayWinMessage() {
         SoundManager.playEffect("totah.m4a");
@@ -287,7 +326,6 @@ public class MyViewController implements IView, Observer {
         imageView.setFitWidth(700);
 
         StackPane root = new StackPane(imageView);
-
         Scene scene = new Scene(root);
 
         stage.setScene(scene);
@@ -295,8 +333,10 @@ public class MyViewController implements IView, Observer {
         stage.show();
     }
 
+    /**
+     * Shows a losing message when the user asks to solve the maze.
+     */
     public void displayLoseMessage() {
-
         SoundManager.playEffect("what a loser.m4a");
 
         Stage stage = new Stage();
@@ -308,20 +348,24 @@ public class MyViewController implements IView, Observer {
         imageView.setFitWidth(700);
 
         StackPane root = new StackPane(imageView);
-
         Scene scene = new Scene(root);
 
         stage.setScene(scene);
         stage.setTitle("You Lost!");
-
         stage.showAndWait();
     }
 
+    /**
+     * Exits the application.
+     */
     @FXML
     public void exit() {
         Platform.exit();
     }
 
+    /**
+     * Displays general application properties.
+     */
     @FXML
     public void showProperties() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -336,6 +380,9 @@ public class MyViewController implements IView, Observer {
         alert.showAndWait();
     }
 
+    /**
+     * Displays the game instructions.
+     */
     @FXML
     public void showHelp() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -343,19 +390,26 @@ public class MyViewController implements IView, Observer {
         alert.setHeaderText("How to play");
         alert.setContentText("""
             Generate a maze from File -> New.
-            
+
             Move the robot using NumPad:
             8 = up
             2 = down
             4 = left
             6 = right
             7, 9, 1, 3 = diagonals
-            
+
             Use Maze -> Solve to show wheel marks that help you reach the goal.
             """);
         alert.showAndWait();
     }
 
+    /**
+     * Called when the ViewModel notifies about a change.
+     * Refreshes the maze and checks whether the goal was reached.
+     *
+     * @param o observed object
+     * @param arg optional update argument
+     */
     @Override
     public void update(Observable o, Object arg) {
         displayMaze();
@@ -371,6 +425,9 @@ public class MyViewController implements IView, Observer {
         }
     }
 
+    /**
+     * Displays information about the project and authors.
+     */
     @FXML
     public void showAbout() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -378,7 +435,7 @@ public class MyViewController implements IView, Observer {
         alert.setHeaderText("Maze Game");
         alert.setContentText("""
             ATP Project - Part C
-            
+
             Authors:
             Karni & Ziv
             ...
@@ -387,6 +444,11 @@ public class MyViewController implements IView, Observer {
         alert.showAndWait();
     }
 
+    /**
+     * Handles zooming in and out using Ctrl + mouse scroll.
+     *
+     * @param event mouse scroll event
+     */
     public void mouseScrolled(javafx.scene.input.ScrollEvent event) {
         if (event.isControlDown()) {
             if (event.getDeltaY() > 0) {
@@ -402,9 +464,16 @@ public class MyViewController implements IView, Observer {
         }
     }
 
+    /**
+     * Attempts to move the character and plays a wall sound
+     * if the movement is not allowed.
+     *
+     * @param rowChange row movement
+     * @param colChange column movement
+     */
     private void moveCharacterWithSound(int rowChange, int colChange) {
         if (!viewModel.moveCharacter(rowChange, colChange)) {
-            SoundManager.playRandomEffectWithCooldown(WALL_SOUNDS,900);;
+            SoundManager.playRandomEffectWithCooldown(WALL_SOUNDS, 900);
         }
     }
 }
