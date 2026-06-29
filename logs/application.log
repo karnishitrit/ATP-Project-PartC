@@ -106,3 +106,18 @@
 2026-06-29 10:55:47 INFO  MyViewController - Generated maze: 15 rows x 15 columns
 2026-06-29 10:55:54 INFO  MyModel - Maze loaded from C:\Users\user\Desktop\karni\bgu\שנה ב\סמסטר ד\תכנות\בדיקה.maze
 2026-06-29 10:55:54 INFO  MyViewController - Maze loaded from C:\Users\user\Desktop\karni\bgu\שנה ב\סמסטר ד\תכנות\בדיקה.maze
+2026-06-29 11:09:59 INFO  Main - Application started
+2026-06-29 11:10:00 INFO  MyModel - Servers started
+2026-06-29 11:10:00 INFO  Main - Main window displayed
+2026-06-29 11:10:41 INFO  Main - Application started
+2026-06-29 11:10:41 INFO  MyModel - Servers started
+2026-06-29 11:10:42 INFO  Main - Main window displayed
+2026-06-29 11:11:50 INFO  MyModel - Servers stopped
+2026-06-29 11:11:50 INFO  Main - Application closed
+2026-06-29 11:13:11 INFO  MyModel - Servers stopped
+2026-06-29 11:13:11 INFO  Main - Application closed
+2026-06-29 11:13:14 INFO  Main - Application started
+2026-06-29 11:13:15 INFO  MyModel - Servers started
+2026-06-29 11:13:15 INFO  Main - Main window displayed
+2026-06-29 11:13:25 INFO  MyModel - Servers stopped
+2026-06-29 11:13:25 INFO  Main - Application closed

@@ -410,7 +410,7 @@ public class MyViewController implements IView, Observer {
     public void showProperties() {
         Properties properties = new Properties();
 
-        try (InputStream input = new FileInputStream("config.properties")) {
+        try (InputStream input = new FileInputStream("resources/config.properties")) {
             properties.load(input);
 
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -419,13 +419,12 @@ public class MyViewController implements IView, Observer {
 
             alert.setContentText(
                     "Maze Generator: "
-                            + properties.getProperty("maze.generator")
+                            + "Thread Pool Size: "
+                            + properties.getProperty("threadPoolSize")
+                            + "\n\nMaze Generator: "
+                            + properties.getProperty("mazeGeneratingAlgorithm")
                             + "\n\nMaze Search Algorithm: "
-                            + properties.getProperty("maze.search.algorithm")
-                            + "\n\nTheme: "
-                            + properties.getProperty("theme")
-                            + "\n\nMovement: "
-                            + properties.getProperty("movement")
+                            + properties.getProperty("mazeSearchingAlgorithm")
             );
 
             alert.showAndWait();
