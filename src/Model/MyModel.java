@@ -104,9 +104,7 @@ public class MyModel extends Observable implements IModel {
      * @throws IOException if decompression fails
      */
     private Maze decompressMaze(byte[] compressedMaze, int rows, int columns) throws IOException {
-        InputStream inputStream = new MyDecompressorInputStream(
-                new ByteArrayInputStream(compressedMaze)
-        );
+        InputStream inputStream = new MyDecompressorInputStream(new ByteArrayInputStream(compressedMaze));
 
         byte[] mazeBytes = new byte[rows * columns + 24];
         inputStream.read(mazeBytes);

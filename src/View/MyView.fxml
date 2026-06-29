@@ -9,7 +9,6 @@
             fx:controller="View.MyViewController"
             onKeyPressed="#keyPressed"
             focusTraversable="true">
-
     <top>
         <MenuBar>
             <Menu text="File">
@@ -40,10 +39,8 @@
 
     <center>
         <StackPane fx:id="mazePane">
-
             <MazeDisplayer fx:id="mazeDisplayer" visible="false"/>
             <StackPane fx:id="welcomePane" styleClass="welcomePane"/>
-
         </StackPane>
     </center>
 

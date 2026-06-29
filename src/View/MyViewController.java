@@ -1,9 +1,7 @@
 package View;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import ViewModel.MyViewModel;
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
@@ -14,21 +12,26 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
-import javafx.animation.PauseTransition;
-import javafx.util.Duration;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.Duration;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Optional;
+import java.util.Properties;
 
 /**
  * Controller for the main application view.
  * Handles user actions, updates the maze display,
- * and communicates with the ViewModel.
+ * and connects the View with the ViewModel.
  */
 public class MyViewController implements IView, Observer {
 
@@ -53,10 +56,9 @@ public class MyViewController implements IView, Observer {
     );
 
     /**
-     * Sets the ViewModel used by this controller
-     * and registers the controller as an observer.
+     * Sets the ViewModel and registers this controller as an observer.
      *
-     * @param viewModel the ViewModel connected to this view
+     * @param viewModel ViewModel connected to this view
      */
     public void setViewModel(MyViewModel viewModel) {
         this.viewModel = viewModel;
@@ -65,11 +67,13 @@ public class MyViewController implements IView, Observer {
 
     /**
      * Initializes the view after the FXML file is loaded.
-     * Binds the maze display size to its pane, sets the welcome screen,
-     * and registers mouse dragging behavior.
+     * The controller supplies the maze display with images,
+     * binds the canvas size, and registers mouse behavior.
      */
     @FXML
     public void initialize() {
+        setMazeDisplayImages();
+
         mazeDisplayer.widthProperty().bind(mazePane.widthProperty());
         mazeDisplayer.heightProperty().bind(mazePane.heightProperty());
 
@@ -93,12 +97,48 @@ public class MyViewController implements IView, Observer {
             int columnChange = Integer.compare(targetColumn, currentColumn);
 
             boolean moved = viewModel.moveCharacter(rowChange, columnChange);
+
             if (!moved) {
                 SoundManager.playRandomEffect(WALL_SOUNDS);
             }
         });
 
         SoundManager.playEffect("start.m4a");
+    }
+
+    /**
+     * Loads the game images and gives them to the maze display.
+     * This keeps the MazeDisplayer reusable and not tied to
+     * this specific robot-vacuum theme.
+     */
+    private void setMazeDisplayImages() {
+        mazeDisplayer.setImages(
+                loadImage("/Images/robot_right.png"),
+                loadImage("/Images/robot_left.png"),
+                loadImage("/Images/floor.png"),
+                loadImage("/Images/charging_station.png"),
+
+                new Image[]{
+                        loadImage("/Images/dust_small.png"),
+                        loadImage("/Images/dust_medium.png"),
+                        loadImage("/Images/dust_large.png"),
+                        loadImage("/Images/glass.png"),
+                        loadImage("/Images/crack.png"),
+                        loadImage("/Images/plant.png"),
+                        loadImage("/Images/water.png"),
+                        loadImage("/Images/cabinet.png")
+                }
+        );
+    }
+
+    /**
+     * Loads an image resource from the project resources.
+     *
+     * @param path image path inside resources
+     * @return loaded image
+     */
+    private Image loadImage(String path) {
+        return new Image(getClass().getResourceAsStream(path));
     }
 
     /**
@@ -235,7 +275,7 @@ public class MyViewController implements IView, Observer {
     /**
      * Handles keyboard movement using NumPad and digit keys.
      *
-     * @param keyEvent the keyboard event
+     * @param keyEvent keyboard event
      */
     public void keyPressed(KeyEvent keyEvent) {
         switch (keyEvent.getCode()) {
@@ -319,7 +359,7 @@ public class MyViewController implements IView, Observer {
 
         Stage stage = new Stage();
 
-        Image image = new Image(getClass().getResourceAsStream("/Images/success.png"));
+        Image image = loadImage("/Images/success.png");
         ImageView imageView = new ImageView(image);
 
         imageView.setPreserveRatio(true);
@@ -341,7 +381,7 @@ public class MyViewController implements IView, Observer {
 
         Stage stage = new Stage();
 
-        Image image = new Image(getClass().getResourceAsStream("/Images/loser.png"));
+        Image image = loadImage("/Images/loser.png");
         ImageView imageView = new ImageView(image);
 
         imageView.setPreserveRatio(true);
@@ -364,20 +404,35 @@ public class MyViewController implements IView, Observer {
     }
 
     /**
-     * Displays general application properties.
+     * Reads and displays the application configuration file.
      */
     @FXML
     public void showProperties() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Properties");
-        alert.setHeaderText("Application Properties");
-        alert.setContentText("""
-            Maze generating algorithm: MyMazeGenerator
-            Maze searching algorithm: BestFirstSearch
-            Theme: Robot Vacuum - Apartment Escape
-            Movement: NumPad only
-            """);
-        alert.showAndWait();
+        Properties properties = new Properties();
+
+        try (InputStream input = new FileInputStream("config.properties")) {
+            properties.load(input);
+
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Properties");
+            alert.setHeaderText("Application Properties");
+
+            alert.setContentText(
+                    "Maze Generator: "
+                            + properties.getProperty("maze.generator")
+                            + "\n\nMaze Search Algorithm: "
+                            + properties.getProperty("maze.search.algorithm")
+                            + "\n\nTheme: "
+                            + properties.getProperty("theme")
+                            + "\n\nMovement: "
+                            + properties.getProperty("movement")
+            );
+
+            alert.showAndWait();
+
+        } catch (IOException e) {
+            displayError("Could not load configuration file.");
+        }
     }
 
     /**
@@ -404,8 +459,8 @@ public class MyViewController implements IView, Observer {
     }
 
     /**
-     * Called when the ViewModel notifies about a change.
-     * Refreshes the maze and checks whether the goal was reached.
+     * Receives updates from the ViewModel,
+     * refreshes the display and checks if the game ended.
      *
      * @param o observed object
      * @param arg optional update argument
@@ -433,13 +488,20 @@ public class MyViewController implements IView, Observer {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("About");
         alert.setHeaderText("Maze Game");
+
         alert.setContentText("""
             ATP Project - Part C
 
             Authors:
             Karni & Ziv
-            ...
-        """);
+
+            This application was developed as part of the
+            Advanced Programming Techniques course.
+
+            The game allows users to generate, solve,
+            save and load mazes through a graphical
+            JavaFX interface using the MVVM architecture.
+            """);
 
         alert.showAndWait();
     }

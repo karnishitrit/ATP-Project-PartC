@@ -89,3 +89,20 @@
 2026-06-28 12:36:23 INFO  MyViewController - Generated maze: 20 rows x 20 columns
 2026-06-28 12:37:16 INFO  MyModel - Servers stopped
 2026-06-28 12:37:16 INFO  Main - Application closed
+2026-06-29 10:54:30 INFO  Main - Application started
+2026-06-29 10:54:31 INFO  MyModel - Servers started
+2026-06-29 10:54:31 INFO  Main - Main window displayed
+2026-06-29 10:54:36 INFO  MyModel - Requesting maze generation: 15x15
+2026-06-29 10:54:37 INFO  MyModel - Maze generated successfully
+2026-06-29 10:54:37 INFO  MyViewController - Generated maze: 15 rows x 15 columns
+2026-06-29 10:54:46 INFO  MyViewController - Player reached the goal
+2026-06-29 10:54:56 INFO  MyViewController - User requested maze solution
+2026-06-29 10:54:56 INFO  MyModel - Requesting maze solution
+2026-06-29 10:54:56 INFO  MyModel - Maze solution received
+2026-06-29 10:55:43 INFO  MyModel - Maze saved to C:\Users\user\Desktop\karni\bgu\שנה ב\סמסטר ד\תכנות\בדיקה.maze
+2026-06-29 10:55:43 INFO  MyViewController - Maze saved to C:\Users\user\Desktop\karni\bgu\שנה ב\סמסטר ד\תכנות\בדיקה.maze
+2026-06-29 10:55:47 INFO  MyModel - Requesting maze generation: 15x15
+2026-06-29 10:55:47 INFO  MyModel - Maze generated successfully
+2026-06-29 10:55:47 INFO  MyViewController - Generated maze: 15 rows x 15 columns
+2026-06-29 10:55:54 INFO  MyModel - Maze loaded from C:\Users\user\Desktop\karni\bgu\שנה ב\סמסטר ד\תכנות\בדיקה.maze
+2026-06-29 10:55:54 INFO  MyViewController - Maze loaded from C:\Users\user\Desktop\karni\bgu\שנה ב\סמסטר ד\תכנות\בדיקה.maze

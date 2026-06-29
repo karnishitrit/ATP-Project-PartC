@@ -28,12 +28,7 @@ public class SoundManager {
      * @param fileName sound file name
      */
     public static void playEffect(String fileName) {
-
-        AudioClip clip = new AudioClip(
-                SoundManager.class
-                        .getResource("/Sounds/" + fileName)
-                        .toExternalForm());
-
+        AudioClip clip = new AudioClip(SoundManager.class.getResource("/Sounds/" + fileName).toExternalForm());
         clip.play();
     }
 
@@ -44,16 +39,12 @@ public class SoundManager {
      * @param fileName background music file
      */
     public static void playBackground(String fileName) {
-
         if (backgroundPlayer != null) {
             backgroundPlayer.stop();
             backgroundPlayer.dispose();
         }
 
-        Media media = new Media(
-                SoundManager.class
-                        .getResource("/Sounds/" + fileName)
-                        .toExternalForm());
+        Media media = new Media(SoundManager.class.getResource("/Sounds/" + fileName).toExternalForm());
 
         backgroundPlayer = new MediaPlayer(media);
         backgroundPlayer.setVolume(0.15);
@@ -70,7 +61,6 @@ public class SoundManager {
      * Stops the currently playing background music.
      */
     public static void stopBackground() {
-
         if (backgroundPlayer != null) {
             backgroundPlayer.stop();
         }
@@ -84,7 +74,6 @@ public class SoundManager {
      * @param soundFiles available sound effects
      */
     public static void playRandomEffect(List<String> soundFiles) {
-
         long now = System.currentTimeMillis();
 
         if (now - lastRandomEffectTime < 300) {
@@ -104,7 +93,6 @@ public class SoundManager {
         } while (soundFiles.size() > 1 && index == lastRandomIndex);
 
         lastRandomIndex = index;
-
         playEffect(soundFiles.get(index));
     }
 
@@ -115,9 +103,7 @@ public class SoundManager {
      * @param soundFiles available sound effects
      * @param onFinished action to execute after wards
      */
-    public static void playRandomEffectAndThen(List<String> soundFiles,
-                                               Runnable onFinished) {
-
+    public static void playRandomEffectAndThen(List<String> soundFiles, Runnable onFinished) {
         if (soundFiles == null || soundFiles.isEmpty()) {
             return;
         }
@@ -130,10 +116,7 @@ public class SoundManager {
 
         lastRandomIndex = index;
 
-        Media media = new Media(
-                SoundManager.class
-                        .getResource("/Sounds/" + soundFiles.get(index))
-                        .toExternalForm());
+        Media media = new Media(SoundManager.class.getResource("/Sounds/" + soundFiles.get(index)).toExternalForm());
 
         if (effectPlayer != null) {
             effectPlayer.stop();
@@ -143,42 +126,6 @@ public class SoundManager {
         effectPlayer = new MediaPlayer(media);
 
         effectPlayer.setOnEndOfMedia(() -> {
-
-            effectPlayer.dispose();
-            effectPlayer = null;
-
-            if (onFinished != null) {
-                onFinished.run();
-            }
-        });
-
-        effectPlayer.play();
-    }
-
-    /**
-     * Plays a sound effect and executes
-     * the given action after playback ends.
-     *
-     * @param fileName sound file name
-     * @param onFinished action to execute afterwards
-     */
-    public static void playEffectAndThen(String fileName,
-                                         Runnable onFinished) {
-
-        Media media = new Media(
-                SoundManager.class
-                        .getResource("/Sounds/" + fileName)
-                        .toExternalForm());
-
-        if (effectPlayer != null) {
-            effectPlayer.stop();
-            effectPlayer.dispose();
-        }
-
-        effectPlayer = new MediaPlayer(media);
-
-        effectPlayer.setOnEndOfMedia(() -> {
-
             effectPlayer.dispose();
             effectPlayer = null;
 
@@ -197,8 +144,7 @@ public class SoundManager {
      * @param soundFiles available sound effects
      * @param cooldownMillis minimum time between plays
      */
-    public static void playRandomEffectWithCooldown(List<String> soundFiles,
-                                                    long cooldownMillis) {
+    public static void playRandomEffectWithCooldown(List<String> soundFiles, long cooldownMillis) {
 
         long now = System.currentTimeMillis();
 

@@ -8,46 +8,46 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 
 /**
- * Custom canvas responsible for drawing the maze,
- * character, goal, walls, floor and solution path.
+ * Custom maze board control.
+ * The control knows when and where to draw the maze parts,
+ * but the actual images are provided from outside so the
+ * control can be reused with different themes.
  */
 public class MazeDisplayer extends Canvas {
     private Maze maze;
     private Solution solution;
+
     private int characterRow;
     private int characterColumn;
-
-    private final Image robotRightImage = loadImage("/Images/robot_right.png");
-    private final Image robotLeftImage = loadImage("/Images/robot_left.png");
-
     private boolean facingRight = true;
 
-    private final Image floorImage = loadImage("/Images/floor.png");
-    private final Image goalImage = loadImage("/Images/charging_station.png");
-
-    private final Image[] wallImages = {
-            loadImage("/Images/dust_small.png"),
-            loadImage("/Images/dust_medium.png"),
-            loadImage("/Images/dust_large.png"),
-            loadImage("/Images/glass.png"),
-            loadImage("/Images/crack.png"),
-            loadImage("/Images/plant.png"),
-            loadImage("/Images/water.png"),
-            loadImage("/Images/cabinet.png")
-    };
+    private Image characterRightImage;
+    private Image characterLeftImage;
+    private Image floorImage;
+    private Image goalImage;
+    private Image[] wallImages;
 
     /**
-     * Loads an image resource from the project files.
+     * Sets the images used by the maze display.
+     * This keeps the control independent from a specific game theme.
      *
-     * @param path image resource path
-     * @return loaded image
+     * @param characterRightImage character image facing right
+     * @param characterLeftImage character image facing left
+     * @param floorImage floor cell image
+     * @param goalImage goal cell image
+     * @param wallImages images used for wall cells
      */
-    private Image loadImage(String path) {
-        return new Image(getClass().getResourceAsStream(path));
+    public void setImages(Image characterRightImage, Image characterLeftImage, Image floorImage, Image goalImage, Image[] wallImages) {
+        this.characterRightImage = characterRightImage;
+        this.characterLeftImage = characterLeftImage;
+        this.floorImage = floorImage;
+        this.goalImage = goalImage;
+        this.wallImages = wallImages;
+        redraw();
     }
 
     /**
-     * Sets the maze to display and redraws the canvas.
+     * Sets the maze to display and redraws the board.
      *
      * @param maze maze to display
      */
@@ -57,9 +57,9 @@ public class MazeDisplayer extends Canvas {
     }
 
     /**
-     * Sets the maze solution and redraws it.
+     * Sets the solution path and redraws the board.
      *
-     * @param solution solution path to display
+     * @param solution solution to display
      */
     public void setSolution(Solution solution) {
         this.solution = solution;
@@ -79,7 +79,7 @@ public class MazeDisplayer extends Canvas {
     }
 
     /**
-     * Updates the direction the character is facing.
+     * Updates the direction of the character.
      *
      * @param facingRight true if the character faces right
      */
@@ -89,32 +89,47 @@ public class MazeDisplayer extends Canvas {
     }
 
     /**
-     * Redraws the entire maze canvas.
+     * Redraws the full maze board.
      */
     public void redraw() {
-        if (maze == null)
+        if (maze == null || !imagesAreReady()) {
             return;
+        }
 
-        double canvasHeight = getHeight();
         double canvasWidth = getWidth();
+        double canvasHeight = getHeight();
 
         GraphicsContext gc = getGraphicsContext2D();
         gc.clearRect(0, 0, canvasWidth, canvasHeight);
 
         int[][] map = maze.getMaze();
 
-        double cellHeight = canvasHeight / map.length;
         double cellWidth = canvasWidth / map[0].length;
+        double cellHeight = canvasHeight / map.length;
 
         drawFloor(gc, map, cellWidth, cellHeight);
-        drawWallsAsObjects(gc, map, cellWidth, cellHeight);
+        drawWalls(gc, map, cellWidth, cellHeight);
         drawSolution(gc, cellWidth, cellHeight);
         drawGoal(gc, cellWidth, cellHeight);
         drawCharacter(gc, cellWidth, cellHeight);
     }
 
     /**
-     * Draws the floor image on every maze cell.
+     * Checks that all required images were provided.
+     *
+     * @return true if the board can be drawn
+     */
+    private boolean imagesAreReady() {
+        return characterRightImage != null
+                && characterLeftImage != null
+                && floorImage != null
+                && goalImage != null
+                && wallImages != null
+                && wallImages.length > 0;
+    }
+
+    /**
+     * Draws the floor image in every maze cell.
      */
     private void drawFloor(GraphicsContext gc, int[][] map, double cellWidth, double cellHeight) {
         for (int row = 0; row < map.length; row++) {
@@ -131,31 +146,34 @@ public class MazeDisplayer extends Canvas {
     }
 
     /**
-     * Draws wall cells as visual objects.
+     * Draws wall cells using the wall images supplied from outside.
      */
-    private void drawWallsAsObjects(GraphicsContext gc, int[][] map, double cellWidth, double cellHeight) {
+    private void drawWalls(GraphicsContext gc, int[][] map, double cellWidth, double cellHeight) {
         for (int row = 0; row < map.length; row++) {
             for (int col = 0; col < map[row].length; col++) {
                 if (map[row][col] == 1) {
-                    Image image = getObjectImageForCell(row, col);
-                    gc.drawImage(image, col * cellWidth, row * cellHeight, cellWidth, cellHeight);
+                    Image image = getWallImageForCell(row, col);
+                    gc.drawImage(image, col * cellWidth,row * cellHeight, cellWidth, cellHeight);
                 }
             }
         }
     }
 
     /**
-     * Selects a wall object image for a specific cell.
+     * Selects a wall image according to the cell position.
+     * The same cell will always receive the same image.
      *
-     * @return image for the cell
+     * @param row cell row
+     * @param col cell column
+     * @return wall image for the cell
      */
-    private Image getObjectImageForCell(int row, int col) {
+    private Image getWallImageForCell(int row, int col) {
         int index = Math.abs(row * 31 + col * 17) % wallImages.length;
         return wallImages[index];
     }
 
     /**
-     * Draws the goal position on the maze.
+     * Draws the goal position.
      */
     private void drawGoal(GraphicsContext gc, double cellWidth, double cellHeight) {
         int goalRow = maze.getGoalPosition().getRowIndex();
@@ -168,8 +186,9 @@ public class MazeDisplayer extends Canvas {
      * Draws the solution path over the maze.
      */
     private void drawSolution(GraphicsContext gc, double cellWidth, double cellHeight) {
-        if (solution == null)
+        if (solution == null) {
             return;
+        }
 
         for (AState state : solution.getSolutionPath()) {
             int[] position = parsePosition(state.toString());
@@ -188,11 +207,13 @@ public class MazeDisplayer extends Canvas {
     }
 
     /**
-     * Draws the character at its current position.
+     * Draws the character according to its current direction.
      */
     private void drawCharacter(GraphicsContext gc, double cellWidth, double cellHeight) {
+        Image characterImage = facingRight ? characterRightImage : characterLeftImage;
+
         gc.drawImage(
-                facingRight ? robotRightImage : robotLeftImage,
+                characterImage,
                 characterColumn * cellWidth,
                 characterRow * cellHeight,
                 cellWidth,
@@ -201,7 +222,7 @@ public class MazeDisplayer extends Canvas {
     }
 
     /**
-     * Parses a state position from text format into row and column.
+     * Converts a state text representation into row and column indexes.
      *
      * @param text state text
      * @return array containing row and column
@@ -217,27 +238,29 @@ public class MazeDisplayer extends Canvas {
     }
 
     /**
-     * Converts a mouse Y coordinate to a maze row index.
+     * Converts a mouse Y coordinate into a maze row.
      *
      * @param y mouse Y coordinate
      * @return clicked row, or -1 if no maze exists
      */
     public int getClickedRow(double y) {
-        if (maze == null)
+        if (maze == null) {
             return -1;
+        }
 
         return (int) (y / (getHeight() / maze.getMaze().length));
     }
 
     /**
-     * Converts a mouse X coordinate to a maze column index.
+     * Converts a mouse X coordinate into a maze column.
      *
      * @param x mouse X coordinate
      * @return clicked column, or -1 if no maze exists
      */
     public int getClickedColumn(double x) {
-        if (maze == null)
+        if (maze == null) {
             return -1;
+        }
 
         return (int) (x / (getWidth() / maze.getMaze()[0].length));
     }
@@ -254,6 +277,9 @@ public class MazeDisplayer extends Canvas {
 
     /**
      * Returns the minimum canvas width.
+     *
+     * @param height available height
+     * @return minimum width
      */
     @Override
     public double minWidth(double height) {
@@ -262,6 +288,9 @@ public class MazeDisplayer extends Canvas {
 
     /**
      * Returns the minimum canvas height.
+     *
+     * @param width available width
+     * @return minimum height
      */
     @Override
     public double minHeight(double width) {
@@ -270,6 +299,9 @@ public class MazeDisplayer extends Canvas {
 
     /**
      * Returns the maximum canvas width.
+     *
+     * @param height available height
+     * @return maximum width
      */
     @Override
     public double maxWidth(double height) {
@@ -278,6 +310,9 @@ public class MazeDisplayer extends Canvas {
 
     /**
      * Returns the maximum canvas height.
+     *
+     * @param width available width
+     * @return maximum height
      */
     @Override
     public double maxHeight(double width) {
