@@ -534,7 +534,7 @@ public class MyViewController implements IView, Observer {
      */
     private void moveCharacterWithSound(int rowChange, int colChange) {
         if (!viewModel.moveCharacter(rowChange, colChange)) {
-            SoundManager.playRandomEffectWithCooldown(WALL_SOUNDS, 900);
+            SoundManager.playRandomEffect(WALL_SOUNDS);
         }
     }
 }

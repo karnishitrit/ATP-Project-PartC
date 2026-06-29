@@ -76,24 +76,17 @@ public class SoundManager {
     public static void playRandomEffect(List<String> soundFiles) {
         long now = System.currentTimeMillis();
 
-        if (now - lastRandomEffectTime < 300) {
+        if (now - lastCooldownTime < 300) {
             return;
         }
 
-        lastRandomEffectTime = now;
+        lastCooldownTime = now;
 
-        if (soundFiles == null || soundFiles.isEmpty()) {
-            return;
+        String soundFile = chooseRandomSound(soundFiles);
+
+        if (soundFile != null) {
+            playEffect(soundFile);
         }
-
-        int index;
-
-        do {
-            index = random.nextInt(soundFiles.size());
-        } while (soundFiles.size() > 1 && index == lastRandomIndex);
-
-        lastRandomIndex = index;
-        playEffect(soundFiles.get(index));
     }
 
     /**
@@ -104,19 +97,13 @@ public class SoundManager {
      * @param onFinished action to execute after wards
      */
     public static void playRandomEffectAndThen(List<String> soundFiles, Runnable onFinished) {
-        if (soundFiles == null || soundFiles.isEmpty()) {
+        String soundFile = chooseRandomSound(soundFiles);
+
+        if (soundFile == null) {
             return;
         }
 
-        int index;
-
-        do {
-            index = random.nextInt(soundFiles.size());
-        } while (soundFiles.size() > 1 && index == lastRandomIndex);
-
-        lastRandomIndex = index;
-
-        Media media = new Media(SoundManager.class.getResource("/Sounds/" + soundFiles.get(index)).toExternalForm());
+        Media media = new Media(SoundManager.class.getResource("/Sounds/" + soundFile).toExternalForm());
 
         if (effectPlayer != null) {
             effectPlayer.stop();
@@ -126,6 +113,7 @@ public class SoundManager {
         effectPlayer = new MediaPlayer(media);
 
         effectPlayer.setOnEndOfMedia(() -> {
+
             effectPlayer.dispose();
             effectPlayer = null;
 
@@ -138,22 +126,25 @@ public class SoundManager {
     }
 
     /**
-     * Plays a random sound effect only if the
-     * specified cooldown period has elapsed.
-     *
-     * @param soundFiles available sound effects
-     * @param cooldownMillis minimum time between plays
+     * Returns a random sound while avoiding
+     * repeating the previous one.
      */
-    public static void playRandomEffectWithCooldown(List<String> soundFiles, long cooldownMillis) {
+    private static String chooseRandomSound(List<String> soundFiles) {
 
-        long now = System.currentTimeMillis();
-
-        if (now - lastCooldownTime < cooldownMillis) {
-            return;
+        if (soundFiles == null || soundFiles.isEmpty()) {
+            return null;
         }
 
-        lastCooldownTime = now;
+        int index;
 
-        playRandomEffect(soundFiles);
+        do {
+            index = random.nextInt(soundFiles.size());
+        }
+        while (soundFiles.size() > 1 && index == lastRandomIndex);
+
+        lastRandomIndex = index;
+
+        return soundFiles.get(index);
     }
+
 }

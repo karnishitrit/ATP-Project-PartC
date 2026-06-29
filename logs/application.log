@@ -121,3 +121,19 @@
 2026-06-29 11:13:15 INFO  Main - Main window displayed
 2026-06-29 11:13:25 INFO  MyModel - Servers stopped
 2026-06-29 11:13:25 INFO  Main - Application closed
+2026-06-29 11:26:08 INFO  Main - Application started
+2026-06-29 11:26:09 INFO  MyModel - Servers started
+2026-06-29 11:26:09 INFO  Main - Main window displayed
+2026-06-29 11:26:16 INFO  MyModel - Requesting maze generation: 15x15
+2026-06-29 11:26:16 INFO  MyModel - Maze generated successfully
+2026-06-29 11:26:16 INFO  MyViewController - Generated maze: 15 rows x 15 columns
+2026-06-29 11:27:09 INFO  MyModel - Servers stopped
+2026-06-29 11:27:09 INFO  Main - Application closed
+2026-06-29 11:27:42 INFO  Main - Application started
+2026-06-29 11:27:43 INFO  MyModel - Servers started
+2026-06-29 11:27:43 INFO  Main - Main window displayed
+2026-06-29 11:27:47 INFO  MyModel - Requesting maze generation: 15x15
+2026-06-29 11:27:47 INFO  MyModel - Maze generated successfully
+2026-06-29 11:27:47 INFO  MyViewController - Generated maze: 15 rows x 15 columns
+2026-06-29 11:28:26 INFO  MyModel - Servers stopped
+2026-06-29 11:28:26 INFO  Main - Application closed
